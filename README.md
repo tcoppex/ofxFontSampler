@@ -28,8 +28,8 @@ The example display iteratively the 26 uppercase letters of the latin charset (*
 
 ### References
 
-- [Apple's TrueType Reference Manual](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html#Directory)
-- [The OpenType Font File](https://www.microsoft.com/typography/otspec/otff.htm#otttables)
+- [Apple's TrueType Reference Manual](https://developer.apple.com/fonts/TrueType-Reference-Manual/)
+- [The OpenType Font File](https://www.microsoft.com/typography/otspec/otff.htm)
 - [An Introduction to TrueType Fonts: A look inside the TTF format](http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=iws-chapter08)
 
 ### Acknowledgement
