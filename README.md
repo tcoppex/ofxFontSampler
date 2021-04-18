@@ -17,7 +17,15 @@ The project consist of two parts :
 
 ### Example
 
-The example display iteratively the 26 uppercase letters of the latin charset (*A to Z*) with different animated contour sampling, their mesh being triangulated using the [ofxTriangleMesh](https://github.com/tcoppex/ofxTriangleMesh) addon.
+The example consists of two demos you can switch using the mouse left-click. It relies on the [ofxTriangleMesh](https://github.com/tcoppex/ofxTriangleMesh) addon to triangulate meshes.
+
+#### Demo 1 : Latin charset letters
+
+Display iteratively the 26 uppercase letters of the latin charset (*A to Z*) with different animated contour sampling.
+
+#### Demo 2 : ofxRenderFont
+
+Display a 3d text with dynamic extrusion on the z-axis using the *ofxRenderFont* utility class.
 
 ### Limitations
 
