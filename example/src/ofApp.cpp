@@ -29,7 +29,6 @@ static constexpr int32_t kCharsetSize = 26;
 void ofApp::setup()
 {
   ofSetFrameRate(60);
-  ofEnableDepthTest();
 
   const float fontsize = 0.75f * ofGetHeight();
   fontsampler_.setup("FreeSans.ttf", fontsize);
@@ -37,6 +36,8 @@ void ofApp::setup()
   start_letter_ = u'A';
   letter_index_ = 0;
   bPause_ = false;
+  demo_index_ = 0;
+
   fontrenderer_ = new ofxFontRenderer(fontsampler_); //
 }
 
@@ -71,108 +72,119 @@ void ofApp::update()
 
   // -----------------
 
-  // SAMPLE 1.
+  if (demo_index_ == 0) {
+    // SAMPLE 1.
 
-  // Extract an OFX Path to be rendered.
-  glyph_->extractPath(path_);
+    // Extract an OFX Path to be rendered.
+    glyph_->extractPath(path_);
 
-  // Evaluate a glyph path and extract its mesh data for triangulation.
-  glyph_->extractMeshData(
-    5+dx*5,                           // sub samples count (per curves)
-    true,                             // Enable segment subsampling
-    vertices_, segments_, holes_, 
-    gradientScaling,
-    4                                 // gradient step
-  );
-  contour_.sampling = glyph_->outer_sampling_; //
+    // Evaluate a glyph path and extract its mesh data for triangulation.
+    glyph_->extractMeshData(
+      5+dx*5,                           // sub samples count (per curves)
+      true,                             // Enable segment subsampling
+      vertices_, segments_, holes_, 
+      gradientScaling,
+      4                                 // gradient step
+    );
+    contour_.sampling = glyph_->outer_sampling_; //
 
-  // Triangulate & generate Voronoi diagram for the glyph.
-  trimesh_.triangulateConstrainedDelaunay(vertices_, segments_, holes_, 24, 620); 
-  trimesh_.generateVoronoiDiagram();
+    // Triangulate & generate Voronoi diagram for the glyph.
+    trimesh_.triangulateConstrainedDelaunay(vertices_, segments_, holes_, 24, 620); 
+    trimesh_.generateVoronoiDiagram();
 
-  // Sample and transform the glyph to get a contour polyline.
-  /// @note : 
-  /// You can create the polyline from the extracted mesh data directly, 
-  /// but here we will use the GlyphPath::Sampling_t generated to resample it.
-  /// This is done internally using constructContourPolyline but you can
-  /// retrieve the object to modify it as you see fit.
-  glyph_->constructContourPolyline(
-    128+dx*256,                      // samples count (for the whole path)
-    contour_.polyline, 
-    gradientScaling,    
-    25.6f                            // gradient step factor
-  );
+    // Sample and transform the glyph to get a contour polyline.
+    /// @note : 
+    /// You can create the polyline from the extracted mesh data directly, 
+    /// but here we will use the GlyphPath::Sampling_t generated to resample it.
+    /// This is done internally using constructContourPolyline but you can
+    /// retrieve the object to modify it as you see fit.
+    glyph_->constructContourPolyline(
+      128+dx*256,                      // samples count (for the whole path)
+      contour_.polyline, 
+      gradientScaling,    
+      25.6f                            // gradient step factor
+    );
+  } else {
+    // SAMPLE 2.
 
-  // -----------------
-
-  // SAMPLE 2
-
-  fontrenderer_->setExtrusionScale(50.0f * Bounce(8.0f));
-  fontrenderer_->update(u"fontsampler", gradientScaling);
+    fontrenderer_->setExtrusionScale(50.0f * Bounce(8.0f));
+    fontrenderer_->update(u"fontsampler", gradientScaling);
+  }
 }
 
 void ofApp::draw()
 {
-#if 0
-  // SAMPLE 1 : iterating over the 26 latin charset.
+  if (demo_index_ == 0) {
+    // SAMPLE 1 : iterating over the 26 latin charset.
 
-  //ofColor bg(190,210,182);
-  ofColor bg(50, 50, 50);
+    ofDisableDepthTest();
 
-  ofBackground(bg);
+    //ofColor bg(190,210,182);
+    ofColor bg(50, 50, 50);
 
-  // Center the glyph.
-  const auto& centroid = glyph_->getCentroid();
-  ofTranslate(
-    (0.5f * ofGetWidth() - centroid.x),
-    (0.5f * ofGetHeight() - centroid.y), 
-    0.0f
-  );
+    ofBackground(bg);
 
-  // triangle mesh.
-  ofSetColor(255, 105, 30);
-  trimesh_.draw(false);
+    // Center the glyph.
+    const auto& centroid = glyph_->getCentroid();
+    ofTranslate(
+      (0.5f * ofGetWidth() - centroid.x),
+      (0.5f * ofGetHeight() - centroid.y), 
+      0.0f
+    );
 
-  // Contour.
-  // ofSetColor(50, 20, 25);
-  // contour_.polyline.draw();  
+    // triangle mesh.
+    ofSetColor(255, 105, 30);
+    trimesh_.draw(false);
 
-  // Path
-  path_.setStrokeWidth(3.0f);
-  path_.setStrokeColor(ofColor(255, 155, 30));
-  path_.setFillColor(ofColor(190,180,122));
-  path_.draw();
+    // Contour.
+    // ofSetColor(50, 20, 25);
+    // contour_.polyline.draw();  
 
-  // Voronoi.
-  ofSetColor(255, 255, 130);
-  trimesh_.drawCleanVoronoi(vertices_);
+    // Path
+    path_.setStrokeWidth(3.0f);
+    path_.setStrokeColor(ofColor(255, 155, 30));
+    path_.setFillColor(ofColor(190,180,122));
+    path_.draw();
 
-  // Animated circle around the glyph contour.
-  ofSetColor(250, 80, 75);
-  const auto v = contour_.sampling.evaluate(Tick(20.0f));
-  ofDrawCircle(v.x, v.y, 16);
-#else
-  // SAMPLE 2 : 3d text rendering.
+    // Voronoi.
+    ofSetColor(255, 255, 130);
+    trimesh_.drawCleanVoronoi(vertices_);
 
-  ofRotateDeg( 35.0f, 0.0f, 1.0f, 0.0f);
-  fontrenderer_->draw();
-#endif
+    // Animated circle around the glyph contour.
+    ofSetColor(250, 80, 75);
+    const auto v = contour_.sampling.evaluate(Tick(20.0f));
+    ofDrawCircle(v.x, v.y, 16);
+  } else {
+    // SAMPLE 2 : 3d text rendering.
+
+    ofEnableDepthTest();
+    
+    ofRotateDeg( 35.0f, 0.0f, 1.0f, 0.0f);
+    fontrenderer_->draw();
+  }
 }
 
 void ofApp::keyPressed(int key)
 {
+  // Toggle animation pause for first demo.
   if (key == ' ') {
     bPause_ = !bPause_;
   }
-}    
+
+  // switch between letters.
+  if (key == 'j') {
+    letter_index_ = ofWrap(letter_index_+1, 0, kCharsetSize);
+  }
+  if (key == 'k') {
+    letter_index_ = ofWrap(letter_index_-1, 0, kCharsetSize);
+  }
+}
 
 void ofApp::mousePressed(int x, int y, int button)
 {
+  // switch between demos.
   if (button == 0) {
-    letter_index_ = ofWrap(letter_index_+1, 0, kCharsetSize);
-  }
-  if (button == 2) {
-    letter_index_ = ofWrap(letter_index_-1, 0, kCharsetSize);
+    demo_index_ = ofWrap(demo_index_ + 1, 0, 2);
   }
 }
 

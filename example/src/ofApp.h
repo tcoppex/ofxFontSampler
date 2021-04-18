@@ -20,7 +20,9 @@ class ofApp : public ofBaseApp {
 
   	uint16_t start_letter_;
   	uint16_t letter_index_;
+
   	bool bPause_;
+    int32_t demo_index_;
 
   	// ----
 
