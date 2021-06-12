@@ -31,7 +31,7 @@ class ofxFontRenderer {
   {}
 
   void update(const std::u16string &s, 
-              ofxGlyph::gradientScaleFunc_t gradientScaling);
+              ofxGlyph::updateVertexFunc_t updateVertex);
 
   void draw();
 

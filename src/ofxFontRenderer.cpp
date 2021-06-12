@@ -6,7 +6,7 @@
 
 void ofxFontRenderer::update(
   const std::u16string &str,
-  ofxGlyph::gradientScaleFunc_t gradientScaling
+  ofxGlyph::updateVertexFunc_t updateVertex
 )
 {
   const float dx = ofMap(ofGetMouseX(), 0, ofGetWidth(), 0.0f, 1.0f);
@@ -39,8 +39,8 @@ void ofxFontRenderer::update(
         8,                                // sub samples count (per curves)
         true,                             // Enable segment subsampling
         vertices_, segments_, holes_, 
-        gradientScaling,
-        4                                 // gradient step
+        4,                                // gradient step
+        updateVertex
       );
 
       // Triangulate & generate Voronoi diagram for the glyph.
@@ -88,9 +88,7 @@ void ofxFontRenderer::update(
 /* -------------------------------------------------------------------------- */
 
 void ofxFontRenderer::draw()
-{
-  //const float dx = ofMap(ofGetMouseX(), 0, ofGetWidth(), 0.0f, 1.0f);
-  
+{  
   const ofColor bgcolor(190, 10, 64);
   const ofColor fgcolor(bgcolor.getBrightness()*0.94f);
 
@@ -119,17 +117,17 @@ void ofxFontRenderer::draw()
       {
         // Rotate letter at its origin.
         ofTranslate( center.x, center.y, 0.0f);
-        ofRotate(alpha);
+        ofRotateDeg(alpha);
         ofTranslate( -center.x, -center.y, 0.0f);
 
         // Rotate letter at its corner.
-        ofRotate(alpha);
+        ofRotateDeg(alpha);
 
         // Draw its perturbated trianglemesh.
         {
           // front side
           ofSetColor(255, 105, 130);
-          gm->face.triangulatedMesh.drawWireframe();
+          gm->face.triangulatedMesh.drawWireframe(); //
 
           //if (extrusion_scale_ > glm::epsilon<float>()) 
           {

@@ -187,22 +187,20 @@ void ofxGlyph::extractMeshData(
   std::vector<ofPoint>    &vertices,
   std::vector<glm::ivec2> &segments,
   std::vector<ofPoint>    &holes,
-
-  gradientScaleFunc_t     gradientScaling,
-  int                     gradient_step
+  int                     gradient_step,
+  updateVertexFunc_t      updateVertex
 )
 {
   extractMeshData(subsamples, enable_segments_sampling, vertices, segments, holes);
 
-  // Postprocess the vertex data using noise.
   std::vector<ofPoint> points(vertices.size());
-
   int prev_vertex_index = -1;
   int first_vertex_index = -1;
   int last_vertex_index = -1;
-  
+
+  // Postprocess the vertex data using a custome gradient functor.
   const int num_segments = static_cast<int>(segments.size());
-  for (int i=0; i < num_segments; ++i) {
+  for (int i = 0; i < num_segments; ++i) {
     const auto &s = segments[i];
 
     // if new path : look for the last segment looping the path.
@@ -220,7 +218,8 @@ void ofxGlyph::extractMeshData(
     const int i0 = ofWrap(s.x-gradient_step, first_vertex_index, last_vertex_index);
     const int i1 = ofWrap(s.x+gradient_step, first_vertex_index, last_vertex_index);
     const auto normal = CalculateNormal(vertices[i0], vertices[i1]);
-    vertex += gradientScaling(s.x, vertex) * normal;
+    
+    updateVertex(vertex, s.x, normal);
 
     points[i] = (vertex);
   }
@@ -233,9 +232,8 @@ void ofxGlyph::extractMeshData(
 void ofxGlyph::constructContourPolyline(
   int                 samples, 
   ofPolyline          &pl,
-
-  gradientScaleFunc_t gradientScaling,
-  float               gradient_step_factor
+  float               gradient_step_factor,
+  updateVertexFunc_t  updateVertex
 )
 {
   const float sampling_step = 1.0f / samples;
@@ -254,7 +252,8 @@ void ofxGlyph::constructContourPolyline(
     const ofPoint vertex0(v0.x, v0.y);
     const ofPoint vertex1(v1.x, v1.y);
     const ofPoint normal = CalculateNormal(vertex0, vertex1);
-    vertex += gradientScaling(i, vertex) * normal;
+
+    updateVertex(vertex, i, normal);
 
     pl.addVertex(vertex);
   }

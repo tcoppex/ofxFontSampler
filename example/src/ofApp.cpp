@@ -47,8 +47,9 @@ void ofApp::update()
   const float dy = ofMap(ofGetMouseY(), 0, ofGetHeight(), 0.2f, 1.0f);
 
   // Functor used to change the glyph vertices along its normals as we sample it.
-  ofxGlyph::gradientScaleFunc_t gradientScaling = [dy](int id, const ofPoint &v) { 
-    return dy * Noise(dy * v); 
+  ofxGlyph::updateVertexFunc_t updateVertex = [dy](ofPoint &v, int id, const ofPoint &n) { 
+    const float scale = dy * Noise(dy * v);
+    v += scale * n; 
   };
 
   // -----------------
@@ -80,11 +81,11 @@ void ofApp::update()
 
     // Evaluate a glyph path and extract its mesh data for triangulation.
     glyph_->extractMeshData(
-      5+dx*5,                           // sub samples count (per curves)
-      true,                             // Enable segment subsampling
+      5+dx*5,                            // sub samples count (per curves)
+      true,                              // Enable segment subsampling
       vertices_, segments_, holes_, 
-      gradientScaling,
-      4                                 // gradient step
+      4,                                 // gradient step
+      updateVertex
     );
     contour_.sampling = glyph_->outer_sampling_; //
 
@@ -99,16 +100,16 @@ void ofApp::update()
     /// This is done internally using constructContourPolyline but you can
     /// retrieve the object to modify it as you see fit.
     glyph_->constructContourPolyline(
-      128+dx*256,                      // samples count (for the whole path)
+      128 + dx*256,                     // samples count (for the whole path)
       contour_.polyline, 
-      gradientScaling,    
-      25.6f                            // gradient step factor
+      25.6f,                            // gradient step factor
+      updateVertex    
     );
   } else {
     // SAMPLE 2.
 
     fontrenderer_->setExtrusionScale(50.0f * Bounce(8.0f));
-    fontrenderer_->update(u"fontsampler", gradientScaling);
+    fontrenderer_->update(u"fontsampler", updateVertex);
   }
 }
 

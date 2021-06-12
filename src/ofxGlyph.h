@@ -9,7 +9,7 @@
 
 class ofxGlyph {
  public:
-  typedef std::function<float(int, ofPoint&)> gradientScaleFunc_t;
+  using updateVertexFunc_t = std::function<void(ofPoint&, int, const ofPoint&)>; 
 
   explicit ofxGlyph(Glyph *glyph);
   ~ofxGlyph();
@@ -49,9 +49,9 @@ class ofxGlyph {
   // Helpers methods that act like the previous ones but allows
   // the user to specify a functor to modify the vertice along the
   // vertex normal.
-  // gradientScaling is a functor taking a vertex index in parameter and returning
-  // a floating point value for this vertex.
-  // gradient_step is the distance used to calculated the vertex normal.
+  // @param gradientScaling : functor taking a vertex index, a vertex and a contour normal as parameters 
+  //  and returning a new vertex.
+  // @param gradient_step : distance used to calculated the vertex normal.
   // ---------------------------------------------------------------
   
   void extractMeshData(
@@ -60,15 +60,15 @@ class ofxGlyph {
     std::vector<ofPoint>    &vertices,
     std::vector<glm::ivec2> &segments,
     std::vector<ofPoint>    &holes,
-    gradientScaleFunc_t     gradientScaling,
-    int                     gradient_step
+    int                     gradient_step,
+    updateVertexFunc_t      updateVertex
   );
 
   void constructContourPolyline(
     int                   samples,
     ofPolyline            &pl,
-    gradientScaleFunc_t   gradientScaling,
-    float                 gradient_step_factor
+    float                 gradient_step_factor,
+    updateVertexFunc_t    updateVertex
   );
 
  public:
