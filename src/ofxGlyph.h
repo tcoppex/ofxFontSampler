@@ -9,7 +9,7 @@
 
 class ofxGlyph {
  public:
-  using updateVertexFunc_t = std::function<void(ofPoint&, int, const ofPoint&)>; 
+  using updateVertexFunc_t = std::function<void(glm::vec3&, int, glm::vec3 const&)>; 
 
   explicit ofxGlyph(Glyph *glyph);
   ~ofxGlyph();
@@ -34,9 +34,9 @@ class ofxGlyph {
   void extractMeshData(
     int                     subsamples,
     bool                    enable_segments_sampling,
-    std::vector<ofPoint>    &vertices,
+    std::vector<glm::vec3>  &vertices,
     std::vector<glm::ivec2> &segments,
-    std::vector<ofPoint>    &holes
+    std::vector<glm::vec3>  &holes
   );
 
   /* Construct a polyline from the glyph sampling using samples. 
@@ -57,9 +57,9 @@ class ofxGlyph {
   void extractMeshData(
     int                     subsamples,
     bool                    enable_segments_sampling,
-    std::vector<ofPoint>    &vertices,
+    std::vector<glm::vec3>  &vertices,
     std::vector<glm::ivec2> &segments,
-    std::vector<ofPoint>    &holes,
+    std::vector<glm::vec3>  &holes,
     int                     gradient_step,
     updateVertexFunc_t      updateVertex
   );

@@ -49,10 +49,7 @@ class ofxFontRenderer {
   std::u16string string_;
   std::unordered_map<uint16_t, std::shared_ptr<ofxGlyphMesh>> meshes_;
 
-  // Use to generated mesh data.
-  std::vector<ofPoint> vertices_;
-  std::vector<glm::ivec2> segments_;
-  std::vector<ofPoint> holes_;
-
+  // Use to generate mesh data.
+  ofxTriangleMesh::Polygon_t polygon_;
   float extrusion_scale_;
 };

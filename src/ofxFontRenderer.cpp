@@ -1,6 +1,4 @@
-
 #include "ofxFontRenderer.h"
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -38,7 +36,9 @@ void ofxFontRenderer::update(
       glyph->extractMeshData(
         8,                                // sub samples count (per curves)
         true,                             // Enable segment subsampling
-        vertices_, segments_, holes_, 
+        polygon_.points, 
+        polygon_.segments, 
+        polygon_.holes,  
         4,                                // gradient step
         updateVertex
       );
@@ -46,9 +46,7 @@ void ofxFontRenderer::update(
       // Triangulate & generate Voronoi diagram for the glyph.
       {
         auto &mesh = glyph_mesh->face;
-        mesh.triangulateConstrainedDelaunay(
-          vertices_, segments_, holes_, 24, 620
-        ); 
+        mesh.triangulateConstrainedDelaunay(polygon_, 24, 620); 
         mesh.generateVoronoiDiagram();
       }
 
@@ -59,14 +57,14 @@ void ofxFontRenderer::update(
         const float edge_width{ 1.0f }; //
         
         mesh.clearVertices();
-        for (const auto& v : vertices_) {
+        for (const auto& v : polygon_.points) {
           mesh.addVertex(ofPoint(v.x, v.y, v.z));
           mesh.addVertex(ofPoint(v.x, v.y, v.z - edge_width));
         }
 
         if (!mesh.hasIndices()) {
           mesh.setMode(OF_PRIMITIVE_TRIANGLES);
-          for (const auto& s : segments_) {
+          for (const auto& s : polygon_.segments) {
             const auto i1 = 2*s.x;
             const auto i2 = 2*s.y;
             
@@ -127,7 +125,7 @@ void ofxFontRenderer::draw()
         {
           // front side
           ofSetColor(255, 105, 130);
-          gm->face.triangulatedMesh.drawWireframe(); //
+          gm->face.drawWireframe(); //
 
           //if (extrusion_scale_ > glm::epsilon<float>()) 
           {
@@ -141,7 +139,7 @@ void ofxFontRenderer::draw()
             // back side
             ofTranslate( 0.0f, 0.0f, -extrusion_scale_); //
             ofSetColor(255, 175, 130);
-            gm->face.triangulatedMesh.draw();
+            gm->face.draw();
           }
         }
 

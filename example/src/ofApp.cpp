@@ -47,7 +47,7 @@ void ofApp::update()
   const float dy = ofMap(ofGetMouseY(), 0, ofGetHeight(), 0.2f, 1.0f);
 
   // Functor used to change the glyph vertices along its normals as we sample it.
-  ofxGlyph::updateVertexFunc_t updateVertex = [dy](ofPoint &v, int id, const ofPoint &n) { 
+  ofxGlyph::updateVertexFunc_t updateVertex = [dy](glm::vec3 &v, int id, const glm::vec3 &n) { 
     const float scale = dy * Noise(dy * v);
     v += scale * n; 
   };
@@ -83,14 +83,16 @@ void ofApp::update()
     glyph_->extractMeshData(
       5+dx*5,                            // sub samples count (per curves)
       true,                              // Enable segment subsampling
-      vertices_, segments_, holes_, 
+      polygon_.points, 
+      polygon_.segments, 
+      polygon_.holes, 
       4,                                 // gradient step
       updateVertex
     );
     contour_.sampling = glyph_->outer_sampling_; //
 
     // Triangulate & generate Voronoi diagram for the glyph.
-    trimesh_.triangulateConstrainedDelaunay(vertices_, segments_, holes_, 24, 620); 
+    trimesh_.triangulateConstrainedDelaunay( polygon_, 24, 620); 
     trimesh_.generateVoronoiDiagram();
 
     // Sample and transform the glyph to get a contour polyline.
@@ -149,7 +151,7 @@ void ofApp::draw()
 
     // Voronoi.
     ofSetColor(255, 255, 130);
-    trimesh_.drawCleanVoronoi(vertices_);
+    trimesh_.drawCleanVoronoi( polygon_.points );
 
     // Animated circle around the glyph contour.
     ofSetColor(250, 80, 75);

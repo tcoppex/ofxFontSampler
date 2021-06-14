@@ -29,9 +29,7 @@ class ofApp : public ofBaseApp {
   	ofPath path_;
 
   	// Used to triangulate a glyph.
- 		std::vector<ofPoint> vertices_;
-		std::vector<glm::ivec2> segments_;
-		std::vector<ofPoint> holes_;
+  	ofxTriangleMesh::Polygon_t polygon_;
 		
   	ofxGlyph *glyph_;
 		ofxTriangleMesh trimesh_;

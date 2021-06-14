@@ -114,9 +114,9 @@ void ofxGlyph::extractPath(ofPath &path) const
 void ofxGlyph::extractMeshData(
   int                     subsamples,
   bool                    enable_segments_sampling,
-  std::vector<ofPoint>    &vertices,
+  std::vector<glm::vec3>  &vertices,
   std::vector<glm::ivec2> &segments,
-  std::vector<ofPoint>    &holes
+  std::vector<glm::vec3>  &holes
 )
 {
   vertices.clear();
@@ -184,16 +184,16 @@ void ofxGlyph::constructContourPolyline(
 void ofxGlyph::extractMeshData(
   int                     subsamples,
   bool                    enable_segments_sampling,
-  std::vector<ofPoint>    &vertices,
+  std::vector<glm::vec3>  &vertices,
   std::vector<glm::ivec2> &segments,
-  std::vector<ofPoint>    &holes,
+  std::vector<glm::vec3>  &holes,
   int                     gradient_step,
   updateVertexFunc_t      updateVertex
 )
 {
   extractMeshData(subsamples, enable_segments_sampling, vertices, segments, holes);
 
-  std::vector<ofPoint> points(vertices.size());
+  std::vector<glm::vec3> points(vertices.size());
   int prev_vertex_index = -1;
   int first_vertex_index = -1;
   int last_vertex_index = -1;
@@ -211,20 +211,17 @@ void ofxGlyph::extractMeshData(
       last_vertex_index = segments[j].x;
     }
     prev_vertex_index = s.y;
-    
-    auto vertex = vertices[s.x];
 
     // Calculate normal.
     const int i0 = ofWrap(s.x-gradient_step, first_vertex_index, last_vertex_index);
     const int i1 = ofWrap(s.x+gradient_step, first_vertex_index, last_vertex_index);
     const auto normal = CalculateNormal(vertices[i0], vertices[i1]);
     
-    updateVertex(vertex, s.x, normal);
-
-    points[i] = (vertex);
+    points[i] = vertices[s.x];
+    updateVertex(points[i], s.x, normal);    
   }
 
-  vertices = points;
+  std::swap(vertices, points);// = points;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -243,9 +240,6 @@ void ofxGlyph::constructContourPolyline(
   for (int i = 0; i < samples; ++i) {
     const float t = i * sampling_step;
 
-    const vertex_t& v = outer_sampling_.evaluate(t);
-    ofPoint vertex(v.x, v.y);
-
     // Calculate normal.
     const auto v0 = outer_sampling_.evaluate(t - gradient_sampling_step);
     const auto v1 = outer_sampling_.evaluate(t + gradient_sampling_step);
@@ -253,6 +247,8 @@ void ofxGlyph::constructContourPolyline(
     const ofPoint vertex1(v1.x, v1.y);
     const ofPoint normal = CalculateNormal(vertex0, vertex1);
 
+    const vertex_t& v = outer_sampling_.evaluate(t);
+    auto vertex = glm::vec3(v.x, v.y, 0);
     updateVertex(vertex, i, normal);
 
     pl.addVertex(vertex);
